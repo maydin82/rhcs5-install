@@ -1,0 +1,13 @@
+{% for item in addhosts %}
+service_type: host
+addr:
+hostname: {{ item.hostname }}
+labels:
+{% for roles in item.roles %}
+- {{ roles }}
+{% endfor %}
+
+{% if not loop.last %}
+---
+{% endif %}
+{% endfor %}

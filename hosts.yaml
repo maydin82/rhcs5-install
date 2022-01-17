@@ -1,0 +1,28 @@
+service_type: host
+addr:
+hostname: ceph5osd2
+labels:
+  - mon
+  - mgr
+  - osd
+
+---
+service_type: host
+addr:
+hostname: ceph5osd3
+labels:
+  - mon
+  - mgr
+  - osd
+  - rgw
+
+---
+service_type: host
+addr:
+hostname: ceph5osd3
+labels:
+  - mon
+  - mgr
+  - rgw
+
+---

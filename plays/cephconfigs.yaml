@@ -1,0 +1,67 @@
+    - name: Disable  automatic Monitor deployment
+      shell: cephadm shell -- ceph orch apply mon --unmanaged
+      when: ansible_hostname in groups['cephnodes'][0]
+      changed_when: False
+
+    - name: Disable  automatic OSD deployment
+      shell: cephadm shell -- ceph orch apply osd --all-available-devices --unmanaged={{ 'false' if autoosd_disable else 'true' }}
+      when: ansible_hostname in groups['cephnodes'][0] and autoosd_disable is defined
+      changed_when: False
+
+
+    - name: Enable libstoragemgmt support
+      shell: ceph config set mgr mgr/cephadm/device_enhanced_scan {{ 'true' if libstoragemgmt_enable else 'false' }}
+      when: ansible_hostname in groups['cephnodes'][0] and libstoragemgmt_enable is defined
+      changed_when: False
+
+    - name: Enable OSD auto memory adjustment
+      shell: ceph config set osd osd_memory_target_autotune {{ 'true' if autoosdmemory else 'false' }}
+      changed_when: False
+      when: ansible_hostname in groups['cephnodes'][0] and autoosdmemory is defined
+
+    - name: Label the bootstrap node with mon service
+      shell: cephadm shell -- ceph orch host label add {{ groups['cephnodes'][0]  }} mon
+      changed_when: False
+      when: ansible_hostname in groups['cephnodes'][0]
+
+    - name: Label the bootstrap node with mgr service
+      shell: cephadm shell -- ceph orch host label add {{ groups['cephnodes'][0]  }} mgr
+      changed_when: False
+      when: ansible_hostname in groups['cephnodes'][0]
+
+    - name: Label the bootstrap node with admin service
+      shell: cephadm shell -- ceph orch host label add {{ groups['cephnodes'][0]  }} _admin
+      changed_when: False
+      when: ansible_hostname in groups['cephnodes'][0]
+
+    - name: Label the bootstrap node with osd service
+      shell: cephadm shell -- ceph orch host label add {{ groups['cephnodes'][0]  }} osd
+      changed_when: False
+      when: ansible_hostname in groups['cephnodes'][0] and bootstraphasosd
+
+
+
+    - name: create the yaml file to add new hosts to the cluster
+      template:
+        src: addhosts.j2
+        dest: hosts.yaml
+      when: ansible_hostname in groups['cephnodes'][0]
+
+
+    - name: mount the yaml file and apply it
+      shell: cephadm shell --mount /root/hosts.yaml -- ceph orch apply -i /mnt/hosts.yaml
+      when: ansible_hostname in groups['cephnodes'][0]
+
+    - name: Enable all mons at the nodes which labeled with mon
+      shell: cephadm shell -- ceph orch apply mon label:mon
+      when: ansible_hostname in groups['cephnodes'][0] 
+
+    - name: Enable all mgrs at the nodes which labeled with mon
+      shell: cephadm shell -- ceph orch apply mgr label:mgr
+      when: ansible_hostname in groups['cephnodes'][0] 
+
+    - name: Enable all OSDs if automatic OSD deployment is enabled
+      shell: cephadm shell -- ceph orch apply osd --all-available-devices
+      when: ansible_hostname in groups['cephnodes'][0] and not autoosd_disable
+
+

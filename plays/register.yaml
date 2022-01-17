@@ -1,0 +1,32 @@
+    - name: Register to CDN with pool id
+      redhat_subscription:
+        state: present
+        username: "{{ rhaccount }}"
+        password: "{{ rhaccountpass }}"
+        force_register: true
+        pool_ids: "{{ poolid }}"
+      when: installmethod == "cdn"
+     
+
+    - name: Satellite registration with activation key
+      block:
+        
+        - name: Download katello-ca-consumer-latest.noarch.rpm
+          get_url:
+            url: https://{{ satellite_url }}/pub/katello-ca-consumer-latest.noarch.rpm
+            dest: /tmp/
+            validate_certs: no
+        - name: Install katello-ca-consumer-latest.noarch.rpm package.
+          yum:
+            name: /tmp/katello-ca-consumer-latest.noarch.rpm
+            state: present
+
+        - name: Register with activationkey
+          redhat_subscription:
+            state: present
+            force_register: true
+            activationkey: "{{ satellite_actkey }}"
+            org_id: "{{ satellite_org }}"
+      when: installmethod == "disconnect"
+      
+

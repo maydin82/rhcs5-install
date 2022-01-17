@@ -1,0 +1,13 @@
+- name: Disable all repositories
+  rhsm_repository:
+    name: '*'
+    state: disabled
+
+- name: Enable required repos for RHCS 5 RHEL 8 at all hosts
+  rhsm_repository:
+   name: "{{ item }}"
+   state: enabled
+  loop:
+    - rhel-8-for-x86_64-appstream-rpms
+    - rhel-8-for-x86_64-baseos-rpms
+    - rhceph-5-tools-for-rhel-8-x86_64-rpms

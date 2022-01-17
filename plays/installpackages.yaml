@@ -1,0 +1,37 @@
+- name: Install some required or helpful packages. 
+  yum:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - sos
+    - podman
+    - bind-utils
+    - firewalld
+    - tcpdump
+    - sysstat
+    - chrony
+    - ceph-common
+    - cephadm
+    - lvm2
+
+- name: Install cephadm-ansible
+  yum:
+    name: cephadm-ansible
+    state: present
+  when: ansible_hostname in groups['cephnodes'][0]
+
+
+
+- name: ensure chronyd is running
+  service:
+    name: firewalld
+    state: started
+    enabled: yes
+
+- name: ensure chronyd is running
+  service:
+    name: chronyd
+    state: started
+    enabled: yes
+
+

@@ -1,0 +1,52 @@
+---
+username: "{{ vault_username }}"
+userpass: "{{ vault_userpass }}"
+installmethod: cdn  ## or disconnect
+
+
+# Required if registration method is disconnect
+satellite_url: "satellite.aydin.lab"
+satellite_org: aydin
+satellite_actkey: aydin_ak
+
+# Required if registration method is CDN
+
+rhaccount: rhn-gps-mustafa
+rhaccountpass: "{{ vault_rhaccountpass }}"
+poolid: "{{ vault_poolid }}"
+
+
+#### network info ######
+clusternetwork: "5.5.5.0/24"   ## if you do not use cluster network remove this variable
+monip: 192.168.0.21 ## public IP of the first node which will be the bootstrap node
+public_mtu: 1472    # or 8972
+cluster_mtu: 1472   # or 8972
+
+
+#### ceph configs
+
+libstoragemgmt_enable: true
+autoosd_disable: true
+bootstraphasosd: true
+autoosdmemory: true
+
+
+
+#### add new hosts to the cluster#########
+
+addhosts:
+  - hostname: ceph5osd2
+    roles:
+      - mon
+      - osd
+
+  - hostname: ceph5osd3
+    roles:
+      - mon
+      - mgr
+      - osd
+      - rgw
+
+
+
+

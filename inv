@@ -1,0 +1,4 @@
+[cephnodes]
+ceph5osd1 clusterip=5.5.5.1
+ceph5osd2 clusterip=5.5.5.2
+ceph5osd3 clusterip=5.5.5.3

@@ -81,7 +81,7 @@
           pause:
             minutes: 1
 
-        - name: Apply day2 ceph configs
+        - name: Apply day2 ceph configs and add the new hosts to the cluster
           import_tasks: plays/cephconfigs.yaml
           tags: cephconfigs
 

@@ -1,4 +1,21 @@
 # rhcs5install
+
+This playbook will;
+
+- Register either to the CDN or Satellite, enable repos and install required packages into all nodes
+
+- Tune the RHEL OS paramters as per the best practices
+
+- Run some prechecks to validate all the nodes are ready for the deployment
+
+- Define non-root user for ssh access
+
+- Add new hosts to the cluster
+
+- Apply Day-2 commands to create the cluster as per the labels defined at the all.yml file
+
+For the installation;
+
 - Create a vault  passwords.yml file for secrets. Sample passwords.yml file is;
 
 ```
@@ -9,7 +26,7 @@ vault_userpass: redhat
 
 ```
 
-- Change the variables at all.yml
+- Change the variables at all.yml as per your requirements
 
 - Provide clusterip of each host at inventory file
 

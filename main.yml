@@ -49,7 +49,7 @@
           import_tasks: plays/ostune.yaml
           tags: prepare
 
-        - name: RHEL OS tune
+        - name: Run some prechecks
           import_tasks: plays/prechecks.yaml
           tags: precheck
 

@@ -77,4 +77,3 @@
     value: unlimited
   when: ansible_hostname in groups['cephnodes'][0]  
 
-  

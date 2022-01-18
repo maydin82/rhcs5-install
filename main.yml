@@ -30,65 +30,58 @@
         - passwords.yml
     tasks:
         - name: Create the "{{ username }}" at all nodes and distribute pub keys
-            import_tasks: plays/createuser.yaml
-            tags: precheck
+          import_tasks: plays/createuser.yaml
+          tags: prepare
 
         - name: Register the nodes to satellite or cdn
-            import_tasks: plays/register.yaml
-            tags: precheck
+          import_tasks: plays/register.yaml
+          tags: prepare
 
         - name: enable required repos
-            import_tasks: plays/enablerepos.yaml
-            tags: precheck
+          import_tasks: plays/enablerepos.yaml
+          tags: prepare
 
         - name: Install required packages and ensure important services are running
-            import_tasks: plays/installpackages.yaml
-            tags: precheck
-
-        - name: check the public network communication
-            command: ping -M do -s {{ public_mtu }} -c 1 {{ item }}
-            loop: "{{ groups['all'] }}"
-            tags: precheck
-
-        - name: check the cluster network communication
-            command: ping -M do -s {{ cluster_mtu }} -c 1 {{ hostvars[item].clusterip }}
-            loop: "{{ groups['all'] }}"
-            when: clusternetwork is defined
-            tags: precheck
+          import_tasks: plays/installpackages.yaml
+          tags: prepare
 
         - name: RHEL OS tune
-            import_tasks: plays/ostune.yaml
-            tags: precheck
+          import_tasks: plays/ostune.yaml
+          tags: prepare
+
+        - name: RHEL OS tune
+          import_tasks: plays/prechecks.yaml
+          tags: precheck
 
         - name: check the ceph -s output
-            shell: cephadm shell -- ceph -s
-            register: ceph_exist
-            failed_when: ceph_exist.rc == 0
-            when: ansible_hostname in groups['cephnodes'][0]
+          shell: cephadm shell -- ceph -s
+          register: ceph_exist
+          failed_when: ceph_exist.rc == 0
+          when: ansible_hostname in groups['cephnodes'][0]
 
 
 
-        - name: run connected bootstrap at the at the first node
-            shell: cephadm bootstrap --ssh-user {{ username }} --mon-ip {{ monip }} --cluster-network {{ clusternetwork }}    --ssh-private-key /home/{{ username }}/.ssh/id_rsa --ssh-public-key /home/{{ username }}/.ssh/id_rsa.pub    --registry-username {{ rhaccountpass }} --registry-password {{ rhaccountpass }}
-            when: ansible_hostname in groups['cephnodes'][0] and installmethod == "cdn"
-            register: dis_bootstrapoutput
-            tags: bootstrap
+        - name: run connected bootstrap at the at the first node - cdn
+          shell: cephadm bootstrap --ssh-user {{ username }} --mon-ip {{ monip }} --cluster-network {{ clusternetwork }}    --ssh-private-key /home/{{ username }}/.ssh/id_rsa --ssh-public-key /home/{{ username }}/.ssh/id_rsa.pub    --registry-username {{ rhaccountpass }} --registry-password {{ rhaccountpass }}
+          when: ansible_hostname in groups['cephnodes'][0] and installmethod == "cdn"
+          register: dis_bootstrapoutput
+          tags: bootstrap
 
 
-        - name: run connected bootstrap at the at the first node
-            shell: cephadm    --image {{ registry_url }}:{{ registry_port }}/{{ image_rhceph }} bootstrap --ssh-user {{ username }} --mon-ip {{ monip }} --cluster-network {{ clusternetwork }}    --ssh-private-key /home/{{ username }}/.ssh/id_rsa --ssh-public-key /home/{{ username }}/.ssh/id_rsa.pub
-            when: ansible_hostname in groups['cephnodes'][0] and installmethod == "disconnect"
-            register: dis_bootstrapoutput
-            tags: bootstrap
+        - name: run connected bootstrap at the at the first node - disconnected
+          shell: cephadm    --image {{ registry_url }}:{{ registry_port }}/{{ image_rhceph }} bootstrap --ssh-user {{ username }} --mon-ip {{ monip }} --cluster-network {{ clusternetwork }}    --ssh-private-key /home/{{ username }}/.ssh/id_rsa --ssh-public-key /home/{{ username }}/.ssh/id_rsa.pub
+          when: ansible_hostname in groups['cephnodes'][0] and installmethod == "disconnect"
+          register: dis_bootstrapoutput
+          tags: bootstrap
 
         - debug: var=dis_bootstrapoutput
-            tags: bootstrap
+           tags: bootstrap
 
         - name: Pause for 1 minute for bootstrap node become healthy
-            pause:
-                minutes: 1
+          pause:
+            minutes: 1
 
         - name: Apply day2 ceph configs
-            import_tasks: plays/cephconfigs.yaml
-            tags: cephconfigs
+          import_tasks: plays/cephconfigs.yaml
+          tags: cephconfigs
 

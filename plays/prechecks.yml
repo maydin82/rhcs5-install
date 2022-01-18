@@ -1,0 +1,28 @@
+- name: Check if chrony is synchronized
+  command: ntpstat
+  register: ntpstat_rc
+  ignore_errors: true
+
+- name: Copy chrony configuration
+  copy:
+    src: files/chrony.conf
+    dest: /etc/chrony.conf
+    backup: yes
+  when: ntpstat_rc.rc != 0
+
+- name: Restart chrony service
+  systemd:
+    name: chronyd
+    state: restarted
+  when: ntpstat_rc.rc != 0
+
+- name: check the public network communication
+    command: ping -M do -s {{ public_mtu }} -c 1 {{ item }}
+    loop: "{{ groups['all'] }}"
+    
+
+- name: check the cluster network communication
+    command: ping -M do -s {{ cluster_mtu }} -c 1 {{ hostvars[item].clusterip }}
+    loop: "{{ groups['all'] }}"
+    when: clusternetwork is defined
+   

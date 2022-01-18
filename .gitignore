@@ -1,3 +1,4 @@
 ## ignore buffer folder
 buffer/
 passwords.yml
+group_vars/customer*

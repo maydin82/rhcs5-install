@@ -1,52 +1,69 @@
 ---
 username: "{{ vault_username }}"
 userpass: "{{ vault_userpass }}"
-installmethod: cdn  ## or disconnect
+installmethod: disconnect    ##    disconnect or cdn
 
 
 # Required if registration method is disconnect
-satellite_url: "satellite.aydin.lab"
-satellite_org: aydin
-satellite_actkey: aydin_ak
+satellite_url: "satellite.myorganization.com"
+satellite_org: satelliteorganizationname
+satellite_actkey: rhceph5
+satellite_release: "8.5"
+
+
+registry_url: sample.registry.com
+registry_port: 5000
+
+image_rhceph: "rhceph-5-rhel8:latest"
+image_nodeexporter: 
+image_prometheus:
+image_grafana:
+image_alertmanager:
 
 # Required if registration method is CDN
 
-rhaccount: rhn-gps-mustafa
+rhaccount: xxxxxxx
 rhaccountpass: "{{ vault_rhaccountpass }}"
 poolid: "{{ vault_poolid }}"
 
 
 #### network info ######
-clusternetwork: "5.5.5.0/24"   ## if you do not use cluster network remove this variable
-monip: 192.168.0.21 ## public IP of the first node which will be the bootstrap node
-public_mtu: 1472    # or 8972
-cluster_mtu: 1472   # or 8972
+clusternetwork: "2.2.2.2/24"      ## if you do not use cluster network remove this variable
+monip: 5.5.5.1 ## public IP of the first node which will be the bootstrap node
+public_mtu: 1472        # or 8972
+cluster_mtu: 8972      # or 8972 or 1472
 
 
 #### ceph configs
 
-libstoragemgmt_enable: true
+libstoragemgmt_enable: false
 autoosd_disable: true
 bootstraphasosd: true
 autoosdmemory: true
 
+#### Linux OS Tunning
 
 
-#### add new hosts to the cluster#########
+vm_min_free_kbytes: "2097152"
+net_core_rmem_max: "16777216"
+net_core_wmem_max: "16777216"
+net_ipv4_tcp_rmem: "4096 87380 16777216"
+net_ipv4_tcp_wmem: "4096 16384 16777216"
+
+#### add new hosts to the cluster, do not at bootsrap node here#########
 
 addhosts:
-  - hostname: ceph5osd2
-    roles:
-      - mon
-      - osd
+    - hostname: ceph5osd2
+        roles:
+            - mon
+            - mgr
+            - osd
+            - rgw
 
-  - hostname: ceph5osd3
-    roles:
-      - mon
-      - mgr
-      - osd
-      - rgw
-
-
-
+    - hostname: ceph5osd3
+        roles:
+            - mon
+            - mgr
+            - osd
+            - rgw
 

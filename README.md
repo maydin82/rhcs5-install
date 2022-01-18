@@ -33,3 +33,8 @@ vault_userpass: redhat
 - Run the playbook
 
 `#ansible-playbook -i hosts --ask-vault-pass main.yml`
+
+
+NOTES:
+
+- First node defined at the inventory file will be the bootstrap node and labeled with "_admin"

@@ -28,7 +28,7 @@ poolid: "{{ vault_poolid }}"
 
 
 #### network info ######
-clusternetwork: "2.2.2.2/24"      ## if you do not use cluster network remove this variable
+clusternetwork: "2.2.2.0/24"      ## if you do not use cluster network remove this variable
 monip: 5.5.5.1 ## public IP of the first node which will be the bootstrap node
 public_mtu: 1472        # or 8972
 cluster_mtu: 8972      # or 8972 or 1472

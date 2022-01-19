@@ -1,0 +1,9 @@
+service_type: mds
+service_id: cephfs
+placement:
+  hosts:
+{% for item in mdshosts %}
+    - {{ item }}
+{% if not loop.last %}
+{% endif %}
+{% endfor %}

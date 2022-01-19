@@ -24,6 +24,7 @@
         - name: Register with activationkey
           redhat_subscription:
             state: present
+            release: "{{ satellite_release }}"
             force_register: true
             activationkey: "{{ satellite_actkey }}"
             org_id: "{{ satellite_org }}"

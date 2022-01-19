@@ -62,7 +62,7 @@
     state: present
 
 - name: increase file descriptors
-  sysctl:
+  pam_limits:
     domain: ceph
     limit_type: soft
     limit_item: nofile
@@ -70,7 +70,7 @@
 
 
 - name: increase file descriptors
-  sysctl:
+  pam_limits:
     domain: "{{ username }}"
     limit_type: soft
     limit_item: nofile

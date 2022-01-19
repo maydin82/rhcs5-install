@@ -40,25 +40,24 @@
       when: ansible_hostname in groups['cephnodes'][0] and bootstraphasosd
 
     - name: Change Prometheus image
-      shell: cephadm shell -- ceph config set mgr mgr/cephadm/container_image_prometheus {{ registry_url }}:{{ registry_port }}/{{ image_prometheus }}
+      shell: cephadm shell -- ceph config set mgr mgr/cephadm/container_image_prometheus {{ registry_url }}:{{ registry_port }}/{{ image_prometheus }}
       changed_when: False
       when: ansible_hostname in groups['cephnodes'][0] and installmethod == "disconnect"    
 
     - name: Change Grafana image
-      shell: cephadm shell -- ceph config set mgr mgr/cephadm/container_image_grafana {{ registry_url }}:{{ registry_port }}/{{ image_grafana }}
+      shell: cephadm shell -- ceph config set mgr mgr/cephadm/container_image_grafana {{ registry_url }}:{{ registry_port }}/{{ image_grafana }}
       changed_when: False
       when: ansible_hostname in groups['cephnodes'][0] and installmethod == "disconnect"
 
     - name: Change Alert Manager image
-      shell: cephadm shell -- ceph config set mgr mgr/cephadm/container_image_alertmanager {{ registry_url }}:{{ registry_port }}/{{ image_alertmanager }}
+      shell: cephadm shell -- ceph config set mgr mgr/cephadm/container_image_alertmanager {{ registry_url }}:{{ registry_port }}/{{ image_alertmanager }}
       changed_when: False
       when: ansible_hostname in groups['cephnodes'][0] and installmethod == "disconnect"
 
     - name: Change nodeexporter Manager image
-      shell: cephadm shell -- ceph config set mgr mgr/cephadm/container_image_node_exporter {{ registry_url }}:{{ registry_port }}/{{ image_nodeexporter }}
+      shell: cephadm shell -- ceph config set mgr mgr/cephadm/container_image_node_exporter {{ registry_url }}:{{ registry_port }}/{{ image_nodeexporter }}
       changed_when: False
       when: ansible_hostname in groups['cephnodes'][0] and installmethod == "disconnect"
-
 
     - name: create the yaml file to add new hosts to the cluster
       template:
@@ -75,9 +74,23 @@
       shell: cephadm shell -- ceph orch apply mon label:mon
       when: ansible_hostname in groups['cephnodes'][0] 
 
-    - name: Enable all mgrs at the nodes which labeled with mon
+    - name: Enable all mgrs at the nodes which labeled with mgr
       shell: cephadm shell -- ceph orch apply mgr label:mgr
       when: ansible_hostname in groups['cephnodes'][0] 
+
+
+    - name: Create mds yaml file
+      template:
+        src: mdshosts.j2
+        dest: mdshosts.yaml
+      when: ansible_hostname in groups['cephnodes'][0] and mdshosts is defined
+      tags: testmds
+
+    - name: Mount and apply MDS yaml to the cephadm
+      shell: cephadm shell --mount /root/mdshosts.yaml -- ceph orch apply -i /mnt/mdshosts.yaml
+      when: ansible_hostname in groups['cephnodes'][0] and mdshosts is defined
+      tags: testmds
+
 
     - name: Enable all OSDs if automatic OSD deployment is enabled
       shell: cephadm shell -- ceph orch apply osd --all-available-devices

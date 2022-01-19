@@ -19,10 +19,7 @@
 - name: check the public network communication
   command: ping -M do -s {{ public_mtu }} -c 1 {{ item }}
   loop: "{{ groups['all'] }}"
-    
-
 - name: check the cluster network communication
   command: ping -M do -s {{ cluster_mtu }} -c 1 {{ hostvars[item].clusterip }}
   loop: "{{ groups['all'] }}"
   when: clusternetwork is defined and clusterip is defined
-   

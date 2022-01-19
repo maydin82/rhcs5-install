@@ -13,6 +13,7 @@
     - ceph-common
     - cephadm
     - lvm2
+    - ntpstat
 
 - name: Install cephadm-ansible
   yum:

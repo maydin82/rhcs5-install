@@ -4,7 +4,7 @@
       changed_when: False
 
     - name: Disable  automatic OSD deployment
-      shell: cephadm shell -- ceph orch apply osd --all-available-devices --unmanaged={{ 'false' if autoosd_disable else 'true' }}
+      shell: cephadm shell -- ceph orch apply osd --all-available-devices --unmanaged={{ 'true' if autoosd_disable else 'false' }}
       when: ansible_hostname in groups['cephnodes'][0] and autoosd_disable is defined
       changed_when: False
 

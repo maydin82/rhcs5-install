@@ -19,6 +19,7 @@
         - name: Install katello-ca-consumer-latest.noarch.rpm package.
           yum:
             name: /tmp/katello-ca-consumer-latest.noarch.rpm
+            disable_gpg_check: true
             state: present
 
         - name: Register with activationkey

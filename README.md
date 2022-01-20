@@ -2,6 +2,10 @@
 
 This playbook will;
 
+- Will work if  ansible controller is the bootstrap node itself, but also works if the controller is not the bootstrap node
+
+- Will not update the OS packages at the bootstrap node , but this behaviour  can be easily changed if the ansible controller is not the bootstrap node.
+
 - Register either to the CDN or Satellite, enable repos and install required packages into all nodes
 
 - Tune the RHEL OS paramters as per the best practices
@@ -13,6 +17,9 @@ This playbook will;
 - Add new hosts to the cluster
 
 - Apply Day-2 commands to create the cluster as per the labels defined at the all.yml file
+
+- Will not provision  RGWs
+
 
 For the installation;
 
@@ -39,4 +46,6 @@ NOTES:
 
 - First node defined at the inventory file will be the bootstrap node and labeled with "_admin"
 
-- This playbook will not provision rgws and will not create any rbd pool
+
+
+

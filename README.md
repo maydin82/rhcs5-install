@@ -38,3 +38,5 @@ vault_userpass: redhat
 NOTES:
 
 - First node defined at the inventory file will be the bootstrap node and labeled with "_admin"
+
+- This playbook will not provision rgws and will not create any rbd pool

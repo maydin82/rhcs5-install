@@ -23,3 +23,9 @@
   command: ping -M do -s {{ cluster_mtu }} -c 1 {{ hostvars[item].clusterip }}
   loop: "{{ groups['all'] }}"
   when: clusternetwork is defined and clusterip is defined
+
+
+- name: Ensure that selinux is enforcing
+  selinux:
+    policy: targeted
+    state: enforcing 

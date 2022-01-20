@@ -4,13 +4,13 @@ installmethod: disconnect ##disconnect or cdn
 
 
 # Required if registration method is disconnect
-satellite_url: "satellite.org.tr"
+satellite_url: "mysatellite.intra"
 satellite_org: cephorg
 satellite_actkey: rhceph5
 satellite_release: "8.5"
 
 
-registry_url: tiyaret01.turktelekom.intra
+registry_url: mysatellite.intra
 registry_port: 5000
 
 image_rhceph: "rhceph-5-rhel8:latest"
@@ -27,7 +27,7 @@ image_alertmanager: "ose-prometheus-alertmanager:v4.6"
 
 
 #### network info ######
-clusternetwork: "2.2.2.2/24" ## if you do not use cluster network remove this variable
+clusternetwork: "2.2.2.0/24" ## if you do not use cluster network remove this variable
 monip: 5.5.5.1 ## public IP of the first node which will be the bootstrap node
 public_mtu: 1472 # or 8972
 cluster_mtu: 8972 # or 8972 or 1472
@@ -48,32 +48,31 @@ net_core_wmem_max: "16777216"
 net_ipv4_tcp_rmem: "4096 87380 16777216"
 net_ipv4_tcp_wmem: "4096 16384 16777216"
 
-#### add new hosts to the cluster#########
+#### add new hosts to the cluster, hash the node defination if it is alreadt part of the cluster#########
 
 
 addhosts:
-  - hostname: ceph5osd2
-    roles:
-      - mon
-      - mgr
-      - osd
-      - rgw
+#  - hostname: ceph5osd2
+#    roles:
+#      - mon
+#      - mgr
+#      - osd
+#      - rgw
 
-  - hostname: ceph5osd3
-    roles:
-      - mon
-      - mgr
-      - osd
-      - rgw
-      - mds
-  - hostname: ceph5osd4
-    roles:
-      - mds
-      - osd
-      - rgw
+#  - hostname: ceph5osd3
+#    roles:
+#      - mds
+#      - mon
+#      - mgr
+#      - osd
+#      - rgw
+
+
+
+
 
 #####Add MDS service
 
 mdshosts:
-  - ceph5osd4
   - ceph5osd3
+

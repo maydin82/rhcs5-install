@@ -62,32 +62,44 @@
     - name: create the yaml file to add new hosts to the cluster
       template:
         src: addhosts.j2
-        dest: hosts.yaml
-      when: ansible_hostname in groups['cephnodes'][0]
+        dest: /home/{{ username }}/hosts.yaml
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        backup: yes
+      when: ansible_hostname in groups['cephnodes'][0] and ireallymeantoaddhosts == 'yes' and addhosts is defined
 
 
     - name: mount the yaml file and apply it
-      shell: cephadm shell --mount /root/hosts.yaml -- ceph orch apply -i /mnt/hosts.yaml
+      shell: cephadm shell --mount /home/{{ username }}/hosts.yaml -- ceph orch apply -i /mnt/hosts.yaml
+      when: ansible_hostname in groups['cephnodes'][0] and ireallymeantoaddhosts == 'yes' and addhosts is defined
+
+
+    - name: check the number of mons 
+      shell: ceph orch ps --daemon-type=mon | grep mon |wc -l
+      register: numofmons
       when: ansible_hostname in groups['cephnodes'][0]
 
     - name: Enable all mons at the nodes which labeled with mon
       shell: cephadm shell -- ceph orch apply mon label:mon
-      when: ansible_hostname in groups['cephnodes'][0] 
+      when: ansible_hostname in groups['cephnodes'][0] and numofmons.stdout|int > 3
 
     - name: Enable all mgrs at the nodes which labeled with mgr
       shell: cephadm shell -- ceph orch apply mgr label:mgr
-      when: ansible_hostname in groups['cephnodes'][0] 
+      when: ansible_hostname in groups['cephnodes'][0]  and numofmons.stdout|int > 3 
 
 
     - name: Create mds yaml file
       template:
         src: mdshosts.j2
-        dest: mdshosts.yaml
+        dest: /home/{{ username }}/mdshosts.yaml
+        backup: yes
+        owner: "{{ username }}"
+        group: "{{ username }}"
       when: ansible_hostname in groups['cephnodes'][0] and mdshosts is defined
       tags: testmds
 
     - name: Mount and apply MDS yaml to the cephadm
-      shell: cephadm shell --mount /root/mdshosts.yaml -- ceph orch apply -i /mnt/mdshosts.yaml
+      shell: cephadm shell --mount /home/{{ username }}/mdshosts.yaml -- ceph orch apply -i /mnt/mdshosts.yaml
       when: ansible_hostname in groups['cephnodes'][0] and mdshosts is defined
       tags: testmds
 

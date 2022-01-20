@@ -23,6 +23,7 @@
 
 
 
+
 - name: ensure chronyd is running
   service:
     name: firewalld

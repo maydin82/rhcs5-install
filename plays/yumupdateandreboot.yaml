@@ -1,0 +1,55 @@
+########  Yum update and reboot if kernel is changed
+- name: get num_pgs - containerized
+  command: "cephadm shell -- ceph  -s --format json"
+  register: ceph_pgs
+  delegate_to: "{{ groups['cephnodes'][0] }}"
+
+
+- name: YUM Update {{ ansible_hostname }}
+  yum:
+    name:  "*"
+    state: latest
+
+- name: check for reboot hint
+  shell: if [ $(rpm -q --last kernel | awk 'NR==1 {print $1}') != kernel-$(uname -r) ]; then echo 'reboot'; else echo 'Kernel is current'; fi
+  ignore_errors: true
+  register: reboot_hint
+
+
+- name: Rebooting ...
+  shell: sleep 2 && shutdown -r now
+  async: 1
+  poll: 0
+  register: rebooting
+  when: reboot_hint.stdout == 'reboot'
+
+
+- name: Wait for the reboot to complete if there was a change.
+  wait_for:
+    port: 22
+    host: "{{ ansible_default_ipv4.address }}"
+    sleep: 5
+    delay: 5
+    timeout: 600
+  delegate_to: localhost
+  when: rebooting is changed 
+
+- name: Pause for a few minutes to allow cluster to settle after reboot of that node
+  shell: "sleep 180"
+  when: rebooting is changed and ansible_hostname not in groups['cephnodes'][0]
+
+- name: waiting for clean pgs...
+  command: "cephadm shell -- ceph -s --format json"
+  register: ceph_health_post
+  until: >
+    (((ceph_health_post.stdout | from_json).pgmap.pgs_by_state | length) > 0)
+    and
+    (((ceph_health_post.stdout | from_json).pgmap.pgs_by_state | selectattr('state_name', 'search', '^active\\+clean') | map(attribute='count') | list | sum) == (ceph_pgs.stdout | from_json).pgmap.num_pgs)
+  retries: 50
+  delay: 30
+  delegate_to: localhost
+  when: (ceph_pgs.stdout | from_json).pgmap.num_pgs != 0
+
+
+######################
+

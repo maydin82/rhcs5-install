@@ -17,14 +17,21 @@
       when: ireallymeanit != 'yes'
 
 
-
-- name: Setup the prerequirements
+- name: Prepare the hosts and check prerequirements
   become: true
   hosts: all
   any_errors_fatal: true
   vars_files:
     - passwords.yml
+
+ 
   tasks:
+    - name: exit playbook, if user does not want to proceed.
+      fail:
+        msg: |
+           Exiting the playbook...
+      when: ireallymeantoaddhosts != 'yes'
+
     - name: Create the "{{ username }}" at all nodes and distribute pub keys
       import_tasks: plays/createuser.yaml
       tags: prepare
@@ -41,6 +48,8 @@
       import_tasks: plays/installpackages.yaml
       tags: prepare
 
+
+
     - name: RHEL OS tune
       import_tasks: plays/ostune.yaml
       tags: prepare
@@ -48,6 +57,37 @@
     - name: Run some prechecks
       import_tasks: plays/prechecks.yml
       tags: precheck
+
+- name:  RHEL OS Update
+  become: true
+  hosts: all,!cephnodes[0]
+  serial: 1
+  tasks:
+    - name: Update RHEL OS and reboot if kernel is changed
+      import_tasks: plays/yumupdateandreboot.yaml
+      tags: prepare
+
+
+
+- name: Setup the cluster
+  become: true
+  hosts: all
+  any_errors_fatal: true
+  vars_files:
+    - passwords.yml
+  vars_prompt:
+    - name: ireallymeantoaddhosts
+      prompt: |
+
+         if the hosts at addhosts variable are already part of the cluster,then host specs will be overwritten. You can undefine addhosts          variable not to add any new hosts to the cluster. Do you want to to proceed ?
+      default: 'no'
+      private: no
+  tasks:
+    - name: exit playbook, if user does not want to proceed.
+      fail:
+        msg: |
+           Exiting the playbook...
+      when: ireallymeantoaddhosts != 'yes'
 
     - name: check the ceph -s output
       shell: cephadm shell -- ceph -s
@@ -79,4 +119,5 @@
     - name: Apply day2 ceph configs and add the new hosts to the cluster
       import_tasks: plays/cephconfigs.yaml
       tags: cephconfigs
+
 

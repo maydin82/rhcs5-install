@@ -1,6 +1,8 @@
 username: "{{ vault_username }}"
 userpass: "{{ vault_userpass }}"
 installmethod: disconnect ##disconnect or cdn
+bootstrapping: false
+addnewhosts: false
 
 
 # Required if registration method is disconnect

@@ -37,9 +37,22 @@ vault_userpass: redhat
 
 - Provide clusterip of each host at inventory file
 
-- Run the playbook
+- Run the playbook without bootstrapping or adding new host;
 
 `#ansible-playbook -i hosts --ask-vault-pass main.yml`
+
+- Run the playbook for bootstrapping with additional hosts include into cluster;
+
+`#ansible-playbook -i hosts --ask-vault-pass main.yml -e "bootstrapping=true addnewhosts=true"`
+
+- Run the playbook for bootstrapping without adding additional hosts into the cluster;
+
+`#ansible-playbook -i hosts --ask-vault-pass main.yml -e "bootstrapping=true"`
+
+- Run the playbook just to add new hosts;
+
+`#ansible-playbook -i hosts --ask-vault-pass main.yml -e "addnewhosts=true"`
+
 
 
 NOTES:

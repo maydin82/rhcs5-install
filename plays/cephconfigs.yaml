@@ -1,63 +1,59 @@
     - name: Disable  automatic Monitor deployment
       shell: cephadm shell -- ceph orch apply mon --unmanaged
-      when: ansible_hostname in groups['cephnodes'][0]
       changed_when: False
 
     - name: Disable  automatic OSD deployment
       shell: cephadm shell -- ceph orch apply osd --all-available-devices --unmanaged={{ 'true' if autoosd_disable else 'false' }}
-      when: ansible_hostname in groups['cephnodes'][0] and autoosd_disable is defined
+      when: autoosd_disable is defined
       changed_when: False
 
 
     - name: Enable libstoragemgmt support
       shell: ceph config set mgr mgr/cephadm/device_enhanced_scan {{ 'true' if libstoragemgmt_enable else 'false' }}
-      when: ansible_hostname in groups['cephnodes'][0] and libstoragemgmt_enable is defined
+      when: libstoragemgmt_enable is defined
       changed_when: False
 
     - name: Enable OSD auto memory adjustment
       shell: ceph config set osd osd_memory_target_autotune {{ 'true' if autoosdmemory else 'false' }}
       changed_when: False
-      when: ansible_hostname in groups['cephnodes'][0] and autoosdmemory is defined
+      when: autoosdmemory is defined
 
     - name: Label the bootstrap node with mon service
       shell: cephadm shell -- ceph orch host label add {{ groups['cephnodes'][0]  }} mon
       changed_when: False
-      when: ansible_hostname in groups['cephnodes'][0]
 
     - name: Label the bootstrap node with mgr service
       shell: cephadm shell -- ceph orch host label add {{ groups['cephnodes'][0]  }} mgr
       changed_when: False
-      when: ansible_hostname in groups['cephnodes'][0]
 
     - name: Label the bootstrap node with admin service
       shell: cephadm shell -- ceph orch host label add {{ groups['cephnodes'][0]  }} _admin
       changed_when: False
-      when: ansible_hostname in groups['cephnodes'][0]
 
     - name: Label the bootstrap node with osd service
       shell: cephadm shell -- ceph orch host label add {{ groups['cephnodes'][0]  }} osd
       changed_when: False
-      when: ansible_hostname in groups['cephnodes'][0] and bootstraphasosd
+      when: bootstraphasosd
 
     - name: Change Prometheus image
       shell: cephadm shell -- ceph config set mgr mgr/cephadm/container_image_prometheus {{ registry_url }}:{{ registry_port }}/{{ image_prometheus }}
       changed_when: False
-      when: ansible_hostname in groups['cephnodes'][0] and installmethod == "disconnect"    
+      when: installmethod == "disconnect"    
 
     - name: Change Grafana image
       shell: cephadm shell -- ceph config set mgr mgr/cephadm/container_image_grafana {{ registry_url }}:{{ registry_port }}/{{ image_grafana }}
       changed_when: False
-      when: ansible_hostname in groups['cephnodes'][0] and installmethod == "disconnect"
+      when: installmethod == "disconnect"
 
     - name: Change Alert Manager image
       shell: cephadm shell -- ceph config set mgr mgr/cephadm/container_image_alertmanager {{ registry_url }}:{{ registry_port }}/{{ image_alertmanager }}
       changed_when: False
-      when: ansible_hostname in groups['cephnodes'][0] and installmethod == "disconnect"
+      when: installmethod == "disconnect"
 
     - name: Change nodeexporter Manager image
       shell: cephadm shell -- ceph config set mgr mgr/cephadm/container_image_node_exporter {{ registry_url }}:{{ registry_port }}/{{ image_nodeexporter }}
       changed_when: False
-      when: ansible_hostname in groups['cephnodes'][0] and installmethod == "disconnect"
+      when: installmethod == "disconnect"
 
     - name: create the yaml file to add new hosts to the cluster
       template:
@@ -66,26 +62,29 @@
         owner: "{{ username }}"
         group: "{{ username }}"
         backup: yes
-      when: ansible_hostname in groups['cephnodes'][0] and ireallymeantoaddhosts == 'yes' and addhosts is defined
+      when: 
+        - addnewhosts == 'true' 
+        - addhosts is defined
 
 
     - name: mount the yaml file and apply it
       shell: cephadm shell --mount /home/{{ username }}/hosts.yaml -- ceph orch apply -i /mnt/hosts.yaml
-      when: ansible_hostname in groups['cephnodes'][0] and ireallymeantoaddhosts == 'yes' and addhosts is defined
+      when:
+        - addnewhosts == 'true'
+        - addhosts is defined
 
 
     - name: check the number of mons 
       shell: ceph orch ps --daemon-type=mon | grep mon |wc -l
       register: numofmons
-      when: ansible_hostname in groups['cephnodes'][0]
 
     - name: Enable all mons at the nodes which labeled with mon
       shell: cephadm shell -- ceph orch apply mon label:mon
-      when: ansible_hostname in groups['cephnodes'][0] and numofmons.stdout|int > 3
+      when: numofmons.stdout|int < 3
 
     - name: Enable all mgrs at the nodes which labeled with mgr
       shell: cephadm shell -- ceph orch apply mgr label:mgr
-      when: ansible_hostname in groups['cephnodes'][0]  and numofmons.stdout|int > 3 
+      when: numofmons.stdout|int < 3 
 
 
     - name: Create mds yaml file
@@ -95,17 +94,33 @@
         backup: yes
         owner: "{{ username }}"
         group: "{{ username }}"
-      when: ansible_hostname in groups['cephnodes'][0] and mdshosts is defined
+      when: mdshosts is defined
       tags: testmds
 
     - name: Mount and apply MDS yaml to the cephadm
       shell: cephadm shell --mount /home/{{ username }}/mdshosts.yaml -- ceph orch apply -i /mnt/mdshosts.yaml
-      when: ansible_hostname in groups['cephnodes'][0] and mdshosts is defined
+      when: mdshosts is defined
       tags: testmds
+
+    - name: Check if cephfs volume is created
+      shell: cephadm shell -- ceph fs volume ls | grep cephfs
+      register: cephfsvolume
+      ignore_errors: yes
+
+    - name: Pause for 1 minute for mds daemons become ready
+      pause:
+        minutes: 1
+      when: cephfsvolume.rc != 0
+
+
+    - name: Create cephfs volume if it is no set
+      shell: cephadm shell -- ceph fs volume create cephfs
+      when: cephfsvolume.rc != 0
+
 
 
     - name: Enable all OSDs if automatic OSD deployment is enabled
       shell: cephadm shell -- ceph orch apply osd --all-available-devices
-      when: ansible_hostname in groups['cephnodes'][0] and not autoosd_disable
+      when: not autoosd_disable
 
 

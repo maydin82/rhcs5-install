@@ -123,4 +123,6 @@
       shell: cephadm shell -- ceph orch apply osd --all-available-devices
       when: not autoosd_disable
 
+    - name: Distribute the ceph.conf to the nodes
+      shell: cephadm shell -- ceph config set mgr mgr/cephadm/manage_etc_ceph_ceph_conf true
 

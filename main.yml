@@ -74,7 +74,7 @@
 
 
     - name: run bootstrap at the at the first node - cdn
-      shell: /usr/sbin/cephadm bootstrap --ssh-user {{ username }} --mon-ip {{ monip }} --cluster-network {{ clusternetwork }} --ssh-private-key /home/{{ username }}/.ssh/id_rsa --ssh-public-key /home/{{ username }}/.ssh/id_rsa.pub --registry-username {{ rhaccountpass }} --registry-password {{ rhaccountpass }}
+      shell: /usr/sbin/cephadm bootstrap --ssh-user {{ username }} --mon-ip {{ monip }} --cluster-network {{ clusternetwork }} --ssh-private-key /home/{{ username }}/.ssh/id_rsa --ssh-public-key /home/{{ username }}/.ssh/id_rsa.pub --registry-url registry.redhat.io --registry-username {{ rhaccountuser }} --registry-password {{ rhaccountpass }}
       when: 
         - installmethod == "cdn" 
         - bootstrapping == "true"

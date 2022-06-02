@@ -29,8 +29,8 @@ For the installation;
 rhaccountuser: <rh account user>
 rhaccountpass: <rh account password>
 vault_poolid: <pool id>
-vault_username: admin
-vault_userpass: redhat
+username: admin
+userpass: redhat
 
 ```
 

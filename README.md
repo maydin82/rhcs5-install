@@ -26,8 +26,8 @@ For the installation;
 - Create a vault  passwords.yml file for secrets. Sample passwords.yml file is;
 
 ```
-vault_rhaccountuser: <rh account user>
-vault_rhaccountpass: <rh account password>
+rhaccountuser: <rh account user>
+rhaccountpass: <rh account password>
 vault_poolid: <pool id>
 vault_username: admin
 vault_userpass: redhat

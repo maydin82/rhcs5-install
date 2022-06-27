@@ -37,7 +37,7 @@
 
 - name: Pause for a few minutes to allow cluster to settle after reboot of that node
   shell: "sleep 180"
-  when: rebooting is changed and  bootstrapping != true
+  when: rebooting is changed and  not bootstrapping
 
 - name: waiting for clean pgs...
   command: "cephadm shell -- ceph -s --format json"
